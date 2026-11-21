@@ -1,0 +1,51 @@
+{
+  "source": "wind_power_smi_shortgap.csv",
+  "source_sha256": "420b08f4359f44440e43202f275326ba9524b73ac5655116707738427ca836de",
+  "split_row_boundaries": {
+    "train": [
+      0,
+      28282
+    ],
+    "validation": [
+      28282,
+      34342
+    ],
+    "test": [
+      34342,
+      40403
+    ]
+  },
+  "optimizer": {
+    "epochs": 60,
+    "batch_size": 128,
+    "learning_rate": 0.0003,
+    "weight_decay": 0.0001,
+    "patience": 10,
+    "gradient_clip_norm": 1.0,
+    "seeds": [
+      42
+    ],
+    "device": "cuda",
+    "num_workers": 0,
+    "max_train_samples": null,
+    "max_val_samples": null,
+    "max_test_samples": null,
+    "d_model": 64,
+    "n_heads": 4,
+    "d_ff": 128,
+    "n_layers": 2,
+    "dropout": 0.2,
+    "history": 288,
+    "feature_mode": "basic",
+    "rnn_hidden": 64,
+    "rnn_layers": 2,
+    "arima_order": [
+      2,
+      1,
+      2
+    ]
+  },
+  "seeds": [
+    42
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "sample_minutes": 15,
+  "issue_minutes": 15,
+  "history_steps": 96,
+  "native_target_minutes": 5,
+  "lead_minutes": [
+    20
+  ],
+  "features": [
+    "power_mw",
+    "wind_speed_90m_ms",
+    "wind_speed_70m_ms",
+    "wind_speed_30m_ms",
+    "wind_speed_10m_ms"
+  ],
+  "transformer_features": [
+    "power_mw",
+    "wind_speed_70m_ms"
+  ],
+  "cwt_model": {
+    "history": 96,
+    "horizon": 1,
+    "variables": 5,
+    "use_cwt": true,
+    "head": "seq2seq_plain",
+    "cwt_scales": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "cwt_wind_indices": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "weather_encoder": "lstm_decoder",
+    "power_readout": "last",
+    "native_power_anchor": true,
+    "wind_selection": true,
+    "fan": "tcn",
+    "cwt_vgg16": true,
+    "vgg_passthrough": true,
+    "power_lstm": true
+  },
+  "scaler_mean": [
+    43.42623619825571,
+    7.483625184413798,
+    7.298872385663464,
+    6.391840145795363,
+    6.1164604703636325
+  ],
+  "scaler_std": [
+    37.43326082019149,
+    3.6570706843291285,
+    3.4713448476246773,
+    3.105673583725536,
+    3.08125550147434
+  ],
+  "normalizer_mw": 119.82592766666666,
+  "persistence": "Last observed 15-minute average power at issue time",
+  "native_persistence": "Last observed native five-minute power at issue time",
+  "training": {
+    "epochs": 60,
+    "batch_size": 128,
+    "learning_rate": 0.0003,
+    "weight_decay": 0.0001,
+    "patience": 10,
+    "gradient_clip_norm": 1.0,
+    "seeds": [
+      42
+    ],
+    "device": "cpu",
+    "num_workers": 0,
+    "max_train_samples": null,
+    "max_val_samples": null,
+    "max_test_samples": null,
+    "d_model": 64,
+    "n_heads": 4,
+    "d_ff": 128,
+    "n_layers": 2,
+    "dropout": 0.2,
+    "history": 96,
+    "feature_mode": "basic",
+    "rnn_hidden": 64,
+    "rnn_layers": 2,
+    "arima_order": [
+      2,
+      1,
+      2
+    ]
+  },
+  "comparison_run": null,
+  "windows": {
+    "train": 3449,
+    "validation": 624
+  },
+  "continuous_validation_blocks": [
+    180,
+    1,
+    71,
+    44,
+    167,
+    1,
+    47,
+    113
+  ]
+}
