@@ -39,6 +39,27 @@ Windows PowerShell 快捷命令：
 | `w32_20min_strip_cafr_rnn-none_anchor` | w32 + Strip + CAFR + 无 RNN + anchor | 7.660 | 5.730 | 0.9548 | +2.82% |
 | `w32_20min_strip_cafr_rnn-none_revin` | w32 + Strip + CAFR + RevIN 直接输出 | 8.775 | 6.571 | 0.9406 | -27.50% |
 
+## 单路 MFT 与 Transformer 的 5 分钟对比
+
+在训练目录运行以下命令。每 5 分钟用最近 24 小时的 288 步数据发布一次预测，同时输出未来 +5、+10、+15、+20、+25、+30 分钟的功率。
+
+```text
+cd outputs/wind_power_mft_dual_kan_2h
+python compare_mft_transformer.py
+```
+
+两组使用相同的功率与四高度风速、按时间划分的训练、验证和测试集、32 维隐藏宽度、AdamW 和种子 42。两模型都把最后一个历史位置的特征送入线性层，预测相对最新实测功率的六步残差。MFT 单路使用 MHCB、两层残差 TCN 和 Pre-LN TAN；Transformer 使用两个标准编码器层和正弦位置编码。验证集用于早停和选择权重，测试集用于报告最终结果。对照还包括延续最新观测值的持久性模型。
+
+每次运行会在 `runs/` 下记录数据划分、标准化、超参数、参数数量、验证及测试指标和最佳权重。对比运行的 `metrics.csv` 同时给出六步汇总与逐时效结果。
+
+| 模型 | 测试集六步汇总 RMSE (MW) | +30 分钟 RMSE (MW) | +30 分钟 MAE (MW) | +30 分钟 R² |
+| :--- | ---: | ---: | ---: | ---: |
+| 持久性 | 8.436 | 11.206 | 7.548 | 0.92996 |
+| Transformer | 8.314 | 10.987 | 7.523 | 0.93267 |
+| MFT 单路 | 8.199 | 10.754 | 7.371 | 0.93550 |
+
+训练、验证、测试分别使用 10,296、1,861、1,354 个窗口。两模型的隐藏宽度相同，可训练参数分别为 32,646（MFT）和 17,542（Transformer）。结果来自单种子。见[完整指标](outputs/wind_power_mft_dual_kan_2h/runs/20261122_194359_mft_transformer_5min/metrics.csv)和[运行配置](outputs/wind_power_mft_dual_kan_2h/runs/20261122_194359_mft_transformer_5min/protocol.json)。
+
 ## 基线对比
 
 ```text

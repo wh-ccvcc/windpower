@@ -33,7 +33,11 @@ NATIVE_PER_BIN = SAMPLE_MINUTES // NATIVE_MINUTES
 HISTORY_ROWS = HISTORY_STEPS * NATIVE_PER_BIN
 
 
-def load_windows(reference, leads=LEADS):
+def load_windows(reference, leads=LEADS, *, sample_minutes=SAMPLE_MINUTES, include_test=False):
+    if sample_minutes <= 0 or sample_minutes % NATIVE_MINUTES or (HISTORY_ROWS * NATIVE_MINUTES) % sample_minutes:
+        raise ValueError("Sampling must divide the history window and align to native observations")
+    native_per_bin = sample_minutes // NATIVE_MINUTES
+    history_steps = HISTORY_ROWS // native_per_bin
     path = ROOT / "data" / reference["source"]
     if sha256(path.read_bytes()).hexdigest() != reference["source_sha256"]:
         raise ValueError("The dataset does not match the saved checksum")
@@ -47,27 +51,28 @@ def load_windows(reference, leads=LEADS):
     ends_min = end.astype("datetime64[m]").astype(np.int64)
     lead_offsets = np.asarray(leads) // NATIVE_MINUTES - 1
     windows = {}
-    for split in ("train", "validation"):
+    splits = ("train", "validation", "test") if include_test else ("train", "validation")
+    for split in splits:
         first, stop = reference["split_row_boundaries"][split]
         history_valid = np.lib.stride_tricks.sliding_window_view(valid_past[first:stop], HISTORY_ROWS)
         starts = np.flatnonzero(history_valid.all(axis=1)) + first
         issuance = starts + HISTORY_ROWS
-        issuance = issuance[(issuance + lead_offsets[-1] < stop) & (ends_min[issuance - 1] % SAMPLE_MINUTES == 0)]
+        issuance = issuance[(issuance + lead_offsets[-1] < stop) & (ends_min[issuance - 1] % sample_minutes == 0)]
         target_rows = issuance[:, None] + lead_offsets
         keep = valid_power[target_rows].all(axis=1)
         issuance, target_rows = issuance[keep], target_rows[keep]
         if not len(issuance):
             raise ValueError(f"No aligned windows in {split}")
         past = issuance[:, None] + np.arange(-HISTORY_ROWS, 0)
-        binned = values[past].reshape(len(past), HISTORY_STEPS, NATIVE_PER_BIN, len(FEATURES)).mean(axis=2)
+        binned = values[past].reshape(len(past), history_steps, native_per_bin, len(FEATURES)).mean(axis=2)
         origin = end[issuance - 1]
         target_time = end[target_rows]
         np.testing.assert_array_equal(target_time, origin[:, None] + np.asarray(leads) * np.timedelta64(1, "m"))
         windows[split] = dict(history=binned, origin=origin, target_time=target_time, truth=values[target_rows, 0],
                               last_native_power=values[issuance - 1, 0])
     first, stop = reference["split_row_boundaries"]["train"]
-    bins = np.flatnonzero((ends_min[first:stop] % SAMPLE_MINUTES == 0)) + first
-    bins = bins[bins - (NATIVE_PER_BIN - 1) >= first, None] + np.arange(1 - NATIVE_PER_BIN, 1)
+    bins = np.flatnonzero((ends_min[first:stop] % sample_minutes == 0)) + first
+    bins = bins[bins - (native_per_bin - 1) >= first, None] + np.arange(1 - native_per_bin, 1)
     training = values[bins[valid_past[bins].all(axis=1)]].mean(axis=1)
     center, scale = training.mean(axis=0), training.std(axis=0)
     denominator = float(np.ptp(training[:, 0]))

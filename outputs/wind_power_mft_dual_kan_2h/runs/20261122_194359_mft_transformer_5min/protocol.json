@@ -1,0 +1,96 @@
+{
+  "source": "wind_power_smi_shortgap.csv",
+  "source_sha256": "420b08f4359f44440e43202f275326ba9524b73ac5655116707738427ca836de",
+  "split_row_boundaries": {
+    "train": [
+      0,
+      28282
+    ],
+    "validation": [
+      28282,
+      34342
+    ],
+    "test": [
+      34342,
+      40403
+    ]
+  },
+  "sample_minutes": 5,
+  "issue_minutes": 5,
+  "history_steps": 288,
+  "lead_minutes": [
+    5,
+    10,
+    15,
+    20,
+    25,
+    30
+  ],
+  "features": [
+    "power_mw",
+    "wind_speed_90m_ms",
+    "wind_speed_70m_ms",
+    "wind_speed_30m_ms",
+    "wind_speed_10m_ms"
+  ],
+  "windows": {
+    "train": 10296,
+    "validation": 1861,
+    "test": 1354
+  },
+  "scaler_mean": [
+    42.71393973137132,
+    7.417240520366742,
+    7.234747280870099,
+    6.335511708253357,
+    6.061580123693772
+  ],
+  "scaler_std": [
+    37.595659916206934,
+    3.7173449951597677,
+    3.531859479830596,
+    3.1571414638189395,
+    3.1617260649287022
+  ],
+  "training": {
+    "epochs": 60,
+    "batch_size": 128,
+    "learning_rate": 0.0003,
+    "weight_decay": 0.0001,
+    "patience": 10,
+    "gradient_clip_norm": 1.0,
+    "seeds": [
+      42
+    ],
+    "device": "cpu",
+    "num_workers": 0,
+    "max_train_samples": null,
+    "max_val_samples": null,
+    "max_test_samples": null,
+    "d_model": 32,
+    "n_heads": 4,
+    "d_ff": 64,
+    "n_layers": 2,
+    "dropout": 0.0,
+    "history": 288,
+    "feature_mode": "basic",
+    "rnn_hidden": 64,
+    "rnn_layers": 2,
+    "arima_order": [
+      2,
+      1,
+      2
+    ]
+  },
+  "torch_version": "2.5.1+cpu",
+  "cpu_threads": 4,
+  "readout": "Last history step with a linear head predicting six residuals from the last observed power.",
+  "models": {
+    "mft": "MHCB + two residual TCN blocks + one Pre-LN TAN block",
+    "transformer": "Two standard Transformer encoder layers with sinusoidal positions"
+  },
+  "trainable_parameters": {
+    "mft": 32646,
+    "transformer": 17542
+  }
+}
